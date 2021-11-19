@@ -22,10 +22,15 @@ import javax.swing.filechooser.*;
         JMenuItem openItem;
         JMenuItem saveItem;
         JMenuItem exitItem;
+        JMenu editMenu;
+        JMenuItem cutItem;
+        JMenuItem copyItem;
+        JMenuItem pasteItem;
 
+        //constructor
         TextEditor(){
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            this.setTitle("Bro text Editor");
+            this.setTitle("text Editor");
             this.setSize(500, 500);
             this.setLayout(new FlowLayout());
             this.setLocationRelativeTo(null);
@@ -80,6 +85,23 @@ import javax.swing.filechooser.*;
             fileMenu.add(exitItem);
             menuBar.add(fileMenu);
 
+            editMenu = new JMenu( "Edit");
+            cutItem = new JMenuItem("Cut");
+            copyItem = new JMenuItem("Copy");
+            pasteItem = new JMenuItem("Paste");
+
+            cutItem.addActionListener(this);
+            copyItem.addActionListener(this);
+            pasteItem.addActionListener(this);
+
+            editMenu.add(cutItem);
+            editMenu.add(copyItem);
+            editMenu.add(pasteItem);
+            menuBar.add(editMenu);
+
+
+
+
             // ------ /menubar ------
 
             this.setJMenuBar(menuBar);
@@ -93,6 +115,15 @@ import javax.swing.filechooser.*;
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            if(e.getSource()==cutItem){
+                textArea.cut();
+            }
+            if(e.getSource()==copyItem){
+                textArea.copy();
+            }
+            if(e.getSource()==pasteItem){
+                textArea.paste();
+            }
 
             if(e.getSource()==fontColorButton) {
                 JColorChooser colorChooser = new JColorChooser();
@@ -164,4 +195,5 @@ import javax.swing.filechooser.*;
             }
         }
     }
+
 
