@@ -1,0 +1,245 @@
+package javaproject_attempt3;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
+import javax.swing.text.*;
+
+
+public class Test extends JFrame implements ActionListener{
+	
+	
+	 JMenuBar menuBar;
+     JMenu fileMenu;
+     JMenuItem openItem;
+     JMenuItem saveItem;
+     JMenuItem exitItem;
+     JTextArea textArea ;
+     JMenu editMenu;
+     JMenuItem cutItem;
+     JMenuItem copyItem;
+     JMenuItem pasteItem;
+	
+	
+    private int findLastNonWordChar (String text, int index) {
+        String result = new String() ;
+    	while (--index >= 0) {
+        	if (String.valueOf(text.charAt(index)).matches("\\W")) {
+
+                break;
+            }
+        }
+//		System.out.print(text);
+        return index;
+    }
+
+    private int findFirstNonWordChar (String text, int index) {
+        while (index < text.length()) {
+        	
+        	if (String.valueOf(text.charAt(index)).matches("\\W")) {
+        		System.out.print(text);
+        		break;
+            }
+            index++;
+        }
+        return index;
+    }
+    
+   
+
+    public Test () {
+    	/************************************/
+    	 
+          
+    	  menuBar = new JMenuBar();
+          fileMenu = new JMenu("File");
+          openItem = new JMenuItem("Open");
+          saveItem = new JMenuItem("Save");
+          exitItem = new JMenuItem("Exit");
+
+          openItem.addActionListener(this);
+          saveItem.addActionListener(this);
+          exitItem.addActionListener(this);
+
+          fileMenu.add(openItem);
+          fileMenu.add(saveItem);
+          fileMenu.add(exitItem);
+          menuBar.add(fileMenu);
+
+          editMenu = new JMenu( "Edit");
+          cutItem = new JMenuItem("Cut");
+          copyItem = new JMenuItem("Copy");
+          pasteItem = new JMenuItem("Paste");
+
+          cutItem.addActionListener(this);
+          copyItem.addActionListener(this);
+          pasteItem.addActionListener(this);
+
+          editMenu.add(cutItem);
+          editMenu.add(copyItem);
+          editMenu.add(pasteItem);
+          menuBar.add(editMenu);
+
+
+
+
+          // ------ /menubar ------
+
+          this.setJMenuBar(menuBar);
+//          this.add(fontLabel);
+//          this.add(fontSizeSpinner);
+//          this.add(fontColorButton);
+//          this.add(fontBox);
+//          this.add(scrollPane);
+          this.setVisible(true);
+      
+    	/************************************/
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(400, 400);
+        setLocationRelativeTo(null);
+
+        final StyleContext cont = StyleContext.getDefaultStyleContext();
+        /*************Attribute Color******************/
+        final AttributeSet attrRed = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.RED);
+        final AttributeSet attrBlack = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.BLACK);
+        final AttributeSet attrBlue = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.BLUE);
+        final AttributeSet attrMagenta = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.magenta);
+        /**********************************************/
+        DefaultStyledDocument doc = new DefaultStyledDocument() {
+            public void insertString (int offset, String str, AttributeSet a) throws BadLocationException {
+                super.insertString(offset, str, a);
+
+                String text = getText(0, getLength());
+                int before = findLastNonWordChar(text, offset);
+                if (before < 0) before = 0;
+                int after = findFirstNonWordChar(text, offset + str.length());
+                int wordL = before;
+                int wordR = before;
+
+                while (wordR <= after) {
+                    if (wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")) {
+                    	/*****************Set Colors for Key words here***********************/
+                    	if(text.substring(before, after).matches("(\\W)*(public |private |protected |try |catch |Exception | )")) {
+                        	setCharacterAttributes(before, after - before, attrRed, false);
+                        }
+                        if(text.substring(before, after).matches("(\\W)*(void |int |double |float |byte |boolean |short |long |String |char )")) {
+                        	setCharacterAttributes(before, after - before, attrBlue, false);
+                        }
+                        if(text.substring(before, after).matches("(\\W)*(for |do |while |continue |break |switch |case |if |else |else if )")) {
+                        	setCharacterAttributes(before, after - before, attrMagenta, false);
+                        }
+                        /********************************************************************/
+                        else
+                            setCharacterAttributes(wordL, wordR - wordL, attrBlack, false);
+                        wordL = wordR;
+                    
+                    }
+                    wordR++;
+                }
+            }
+
+            public void remove (int offs, int len) throws BadLocationException {
+                super.remove(offs, len);
+
+                String text = getText(0, getLength());
+                int before = findLastNonWordChar(text, offs);
+                if (before < 0) before = 0;
+                int after = findFirstNonWordChar(text, offs);
+
+                if (text.substring(before, after).matches("(\\W)*(private |public |protected )")) {
+                    setCharacterAttributes(before, after - before, attrRed, false);
+                } 
+                else {
+                    setCharacterAttributes(before, after - before, attrBlack, false);
+                }
+            }
+        };
+        JTextPane txt = new JTextPane(doc);
+        System.out.print(txt);
+        add(new JScrollPane(txt));
+        setVisible(true);
+    }
+
+    public static void main (String args[]) {
+        new Test();
+    }
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		if(e.getSource()==openItem) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File("."));
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt");
+            fileChooser.setFileFilter(filter);
+
+            int response = fileChooser.showOpenDialog(null);
+
+            if(response == JFileChooser.APPROVE_OPTION) {
+                File file = new File(fileChooser.getSelectedFile().getAbsolutePath());
+                Scanner fileIn = null;
+
+                try {
+                    fileIn = new Scanner(file);
+                    if(file.isFile()) {
+                        while(fileIn.hasNextLine()) {
+                            String line = fileIn.nextLine()+"\n";
+                            textArea.append(line);
+                        }
+                    }
+                } catch (FileNotFoundException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+                finally {
+                    fileIn.close();
+                }
+            }
+        }
+        if(e.getSource()==saveItem) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File("."));
+
+            int response = fileChooser.showSaveDialog(null);
+
+            if(response == JFileChooser.APPROVE_OPTION) {
+                File file;
+                PrintWriter fileOut = null;
+
+                file = new File(fileChooser.getSelectedFile().getAbsolutePath());
+                try {
+                    fileOut = new PrintWriter(file);
+                    fileOut.println(textArea.getText());
+                }
+                catch (FileNotFoundException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+                finally {
+                    fileOut.close();
+                }
+            }
+        }
+        if(e.getSource()==exitItem) {
+            System.exit(0);
+        }
+	}
+}
+
+
+/*public class Main{
+public static void main(String[] args) {
+
+System.out.println("Hello World");
+}
+
+}*/
