@@ -1,0 +1,204 @@
+
+/*----------------------------------------------------------------------------NIRANJAN-------------------------------------------------------------------*/
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.filechooser.*;
+
+public class TextEditor extends JFrame implements ActionListener {
+
+/* Creating Objects of different classed to be used later in the program */
+    JTextArea textArea;
+    JScrollPane scrollPane;
+    JLabel fontLabel;
+    JSpinner fontSizeSpinner;
+    JButton fontColorButton;
+    JComboBox fontBox;
+    JMenuBar menuBar;
+    JMenu fileMenu;
+    JMenuItem openItem;
+    JMenuItem saveItem;
+    JMenuItem exitItem;
+    JMenu editMenu;
+    JMenuItem cutItem;
+    JMenuItem copyItem;
+    JMenuItem pasteItem;
+
+    // Constructor  ( for layout of UI )
+    public TextEditor(){
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);    // This function closes window after clicking on close button
+        this.setTitle("text Editor");                       // Sets the title of the window
+        this.setSize(700, 700);                 // Sets the dimensions of window
+        this.setLayout(new FlowLayout());                   //The FlowLayout class puts components in a row, sized at their preferred size.
+        this.setLocationRelativeTo(null);                   // Centers the window on the screen
+
+        textArea = new JTextArea();                     // Instantiates textArea object
+        textArea.setFont(new Font("Arial",Font.PLAIN,20)) ;     // Sets font and size of text
+        scrollPane = new JScrollPane(textArea);                         // Instantiates Scroll bar
+        scrollPane.setPreferredSize(new Dimension(1000,640));    // Sets the size of editor window
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);   // Creates Veritical Scroll bar
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS); // Creates Horizontal Scroll Bar
+
+        fontLabel = new JLabel("Font: ");       // Creates new Lable with text "Font : "
+
+        fontSizeSpinner = new JSpinner();           // Allows user to select font size using spinner
+        fontSizeSpinner.setPreferredSize(new Dimension(50,25));     // Sets the size of Font spinner
+        fontSizeSpinner.setValue(20);                   // Sets the default value of font to 20
+        fontSizeSpinner.addChangeListener(new ChangeListener() {
+            // Overridden Method
+            public void stateChanged(ChangeEvent e) {       // Event object has been passed as parameter
+                textArea.setFont(new Font(textArea.getFont().getFamily(),Font.PLAIN,(int) fontSizeSpinner.getValue()));
+            }
+
+        });
+/*---------------------------------------------------------------AAYUSHI-----------------------------------------------------------------------------------*/
+        fontColorButton = new JButton("Color");         // Allows user to choose different colors
+        fontColorButton.addActionListener(this);            // Action listener for fontColorButton
+
+        String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames(); // Stores all the font families in fonts string array
+
+
+        fontBox = new JComboBox(fonts);     // It is Used to display all the fonts
+        fontBox.addActionListener(this);
+        fontBox.setSelectedItem("Arial");   // Default font
+
+        // ------ menubar ------
+
+        menuBar = new JMenuBar();           // Creates Menu bar at  the top
+        fileMenu = new JMenu("File");       // File menue Item
+        openItem = new JMenuItem("Open");   // Open menue Item
+        saveItem = new JMenuItem("Save");   // Save menue Item
+        exitItem = new JMenuItem("Exit");   // Exit menue Item
+
+        /* Action Listeners for above menue items*/
+        openItem.addActionListener(this);
+        saveItem.addActionListener(this);
+        exitItem.addActionListener(this);
+        /* ************************************* */
+
+        /* Adds the abouve menue items to the menue bar*/
+        fileMenu.add(openItem);
+        fileMenu.add(saveItem);
+        fileMenu.add(exitItem);
+        menuBar.add(fileMenu);
+        /* *********************************************** */
+
+        /* Sub-Menue items for Edit Menue Option*/
+        editMenu = new JMenu( "Edit");
+        cutItem = new JMenuItem("Cut");
+        copyItem = new JMenuItem("Copy");
+        pasteItem = new JMenuItem("Paste");
+
+        cutItem.addActionListener(this);
+        copyItem.addActionListener(this);
+        pasteItem.addActionListener(this);
+
+        editMenu.add(cutItem);
+        editMenu.add(copyItem);
+        editMenu.add(pasteItem);
+        menuBar.add(editMenu);
+        /* *********************************************** */
+
+
+
+        // ------ /menubar ------
+            /* Sets the menuebar and Other Options */
+        this.setJMenuBar(menuBar);
+        this.add(fontLabel);
+        this.add(fontSizeSpinner);
+        this.add(fontColorButton);
+        this.add(fontBox);
+        this.add(scrollPane);
+        this.setVisible(true);      // Sets visibility = true
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(e.getSource()==cutItem){     // checks if the cut event is occoured i.e. user has clicked on cut button
+            textArea.cut();             // Uses cut method to cut the text
+        }
+        if(e.getSource()==copyItem){    //  checks if the copy event is occoured i.e. user has clicked on cut button
+            textArea.copy();             // Uses copy method to cut the text
+        }
+        if(e.getSource()==pasteItem){   // checks if the paste event is occoured i.e. user has clicked on cut button
+            textArea.paste();           // Uses copy method to cut the text
+        }
+
+        if(e.getSource()==fontColorButton) {
+            JColorChooser colorChooser = new JColorChooser();       // It is used to allow user to choose color
+
+            Color color = colorChooser.showDialog(null, "Choose a color", Color.black);    // Displays " choose color " lable
+
+            textArea.setForeground(color);          // Sets the foreground color of textArea
+        }
+
+        if(e.getSource()==fontBox) {
+            textArea.setFont(new Font((String)fontBox.getSelectedItem(),Font.PLAIN,textArea.getFont().getSize()));  // Sets the font of text
+        }
+/*------------------------------------------------------------- SWAPNIL -----------------------------------------------------------------------------------*/
+
+        /* TO Open an Existing File */
+        if(e.getSource()==openItem) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File("."));     // Sets the default name of the file as "."
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt");  // Gives choice to choose the file type
+            // If not chosen then it is text file by default
+            fileChooser.setFileFilter(filter);
+
+            int response = fileChooser.showOpenDialog(null);
+
+            if(response == JFileChooser.APPROVE_OPTION) {
+                File file = new File(fileChooser.getSelectedFile().getAbsolutePath()); // gets the path of the file
+                Scanner fileIn = null;          // Object of Scanner class which is initialized to null
+
+                try {
+                    fileIn = new Scanner(file);     // Reads  File
+                    if(file.isFile()) {                 // Checks whether data type if file is file
+                        while(fileIn.hasNextLine()) {
+                            String line = fileIn.nextLine()+"\n";       //  Reads Every line of the file
+                            textArea.append(line);          // Appends the line of text to the text area
+                        }
+                    }
+                } catch (FileNotFoundException e1) {    // For handling FileNotFoundException
+                    e1.printStackTrace();
+                }
+                finally {
+                    fileIn.close();         // Closes the file after it is no more in use
+                }
+            }
+        }
+
+        /* TO save a new File */
+        if(e.getSource()==saveItem) {
+            JFileChooser fileChooser = new JFileChooser();      // To Choose appropriate file
+            fileChooser.setCurrentDirectory(new File("."));     // Sets the current directory as "."
+
+            int response = fileChooser.showSaveDialog(null);
+
+            if(response == JFileChooser.APPROVE_OPTION) {
+                File file;                      // Creates a variable as file of type file
+                PrintWriter fileOut = null;
+
+                file = new File(fileChooser.getSelectedFile().getAbsolutePath()); // Stores the path of the file in file variable
+                try {
+                    fileOut = new PrintWriter(file);        // writes the file
+                    fileOut.println(textArea.getText());
+                }
+                catch (FileNotFoundException e1) {      // Handles the FileNotFoundException
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();       // It is used to diagnose the exceptions occoured
+                }
+                finally {
+                    fileOut.close();        // Unconditionally closes the file after All opertaions are performed
+                }
+            }
+        }
+        if(e.getSource()==exitItem) {   // Exits the file
+            System.exit(0);
+        }
+    }
+}
+
